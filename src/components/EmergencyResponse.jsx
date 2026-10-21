@@ -78,12 +78,14 @@ const ACTIONS = [
   ],
 ];
 
-
 const SCAN_DURATION = 4900; // one full left→right pass of the 3D scan bar
 
 const SCAN_STEPS = [
   ["فحص الأنابيب والوصلات", "Scanning pipes and junctions"],
-  ["تحليل التدفق والضغط (بيانات تجريبية)", "Analyzing flow and pressure (sample data)"],
+  [
+    "تحليل التدفق والضغط (بيانات تجريبية)",
+    "Analyzing flow and pressure (sample data)",
+  ],
   ["تحديد الأصل المتضرر", "Locating the damaged asset"],
   ["البحث عن مسار بديل", "Searching for an alternative route"],
   ["تقدير المناطق المتأثرة", "Estimating affected areas"],
@@ -272,14 +274,18 @@ export default function EmergencyResponse({
               <i className="incident-dot" />
               {t("Damaged asset")}
             </span>
-            {analyzed && <><span>
-              <i className="route-dot" />
-              {t("Proposed alternative route")}
-            </span>
-            <span>
-              <i className="impact-dot" />
-              {t("Potential impact area")}
-            </span></>}
+            {analyzed && (
+              <>
+                <span>
+                  <i className="route-dot" />
+                  {t("Proposed alternative route")}
+                </span>
+                <span>
+                  <i className="impact-dot" />
+                  {t("Potential impact area")}
+                </span>
+              </>
+            )}
           </div>
           <style>{AI_SCAN_CSS}</style>
           <button
@@ -289,10 +295,16 @@ export default function EmergencyResponse({
           >
             {analyzed ? <ScanLine size={17} /> : <Activity size={17} />}
             {scanning
-              ? ar ? "جاري الفحص..." : "Scanning..."
+              ? ar
+                ? "جاري الفحص..."
+                : "Scanning..."
               : analyzed
-                ? ar ? "إعادة الفحص" : "Re-run scan"
-                : ar ? "تشغيل الذكاء الاصطناعي" : "Run AI"}
+                ? ar
+                  ? "إعادة الفحص"
+                  : "Re-run scan"
+                : ar
+                  ? "تشغيل الذكاء الاصطناعي"
+                  : "Run AI"}
           </button>
 
           {scanning && (
@@ -314,7 +326,11 @@ export default function EmergencyResponse({
                     i < current ? "done" : i === current ? "active" : "";
                   return (
                     <li key={enText} className={state}>
-                      {state === "done" ? <Check size={13} /> : <span style={{ width: 13 }} />}
+                      {state === "done" ? (
+                        <Check size={13} />
+                      ) : (
+                        <span style={{ width: 13 }} />
+                      )}
                       {ar ? arText : enText}
                     </li>
                   );
@@ -332,9 +348,7 @@ export default function EmergencyResponse({
               >
                 <X size={15} />
               </button>
-              <h4 className="ai-scan-title">
-                AI Scan Result — نتيجة فحص الذكاء الاصطناعي
-              </h4>
+              <h4 className="ai-scan-title">AI Scan Result</h4>
               <div className="ai-scan-result-row">
                 <span>{ar ? "الأصول التي تم فحصها" : "Assets scanned"}</span>
                 <b>
@@ -351,11 +365,17 @@ export default function EmergencyResponse({
                 <b>
                   {emergencyRoute.found
                     ? `${emergencyRoute.pipeIds.join(" → ")} · ${emergencyRoute.coverage}%`
-                    : ar ? "لم يتم العثور على مسار" : "None found"}
+                    : ar
+                      ? "لم يتم العثور على مسار"
+                      : "None found"}
                 </b>
               </div>
               <div className="ai-scan-result-row">
-                <span>{ar ? "مناطق خدمة محتمل تأثرها" : "Potentially affected areas"}</span>
+                <span>
+                  {ar
+                    ? "مناطق خدمة محتمل تأثرها"
+                    : "Potentially affected areas"}
+                </span>
                 <b>{fmt(impactedNames.length)}</b>
               </div>
               <p className="ai-scan-note">
@@ -418,14 +438,18 @@ export default function EmergencyResponse({
             <InformationRow label={t("Incident status")}>
               <span className="emergency-status-value">{t(status)}</span>
             </InformationRow>
-            {analyzed && <><InformationRow label={t("Potentially affected service areas")}>
-              {impactedNames.map(t).join(" · ")}
-            </InformationRow>
-            <p className="emergency-note">
-              {t(
-                "Impact areas are a simulated incident assumption based on the sample topology; no hydraulic model has verified service loss.",
-              )}
-            </p></>}
+            {analyzed && (
+              <>
+                <InformationRow label={t("Potentially affected service areas")}>
+                  {impactedNames.map(t).join(" · ")}
+                </InformationRow>
+                <p className="emergency-note">
+                  {t(
+                    "Impact areas are a simulated incident assumption based on the sample topology; no hydraulic model has verified service loss.",
+                  )}
+                </p>
+              </>
+            )}
             <button
               className="emergency-secondary-button"
               onClick={() => selectAsset(emergencyIncident.damagedAssetId)}
@@ -436,72 +460,73 @@ export default function EmergencyResponse({
           </section>
 
           {analyzed && (
-          <section className="emergency-section">
-            <div className="emergency-section-title">
-              <Waypoints size={15} />
-              <h3>{t("Alternative route assessment")}</h3>
-            </div>
-            {!emergencyRoute.found ? (
-              <p className="emergency-warning">
-                {t(
-                  "No alternative route made of existing pipelines was found in the network data.",
-                )}
-              </p>
-            ) : (
-              <>
-                <div className="emergency-route-summary">
-                  <b>{emergencyRoute.pipeIds.join(" → ")}</b>
-                  <span>{t(emergencyRoute.suitability)}</span>
-                </div>
-                <p>{t(emergencyRoute.reason)}</p>
+            <section className="emergency-section">
+              <div className="emergency-section-title">
+                <Waypoints size={15} />
+                <h3>{t("Alternative route assessment")}</h3>
+              </div>
+              {!emergencyRoute.found ? (
                 <p className="emergency-warning">
-                  {t(emergencyRoute.limitation)}
+                  {t(
+                    "No alternative route made of existing pipelines was found in the network data.",
+                  )}
                 </p>
-                <InformationRow label={t("Alternative path")}>
-                  {emergencyRoute.path
-                    .map((id) =>
-                      byId[id].type === "pipe" ? id : t(byId[id].name),
-                    )
-                    .join(" → ")}
-                </InformationRow>
-                <InformationRow label={t("Required flow · P-104 reference")}>
-                  {fmt(emergencyRoute.requiredFlow)} {t("m³/h")}
-                </InformationRow>
-                <InformationRow label={t("Limiting segment · reference flow")}>
-                  {emergencyRoute.bottleneckId} ·{" "}
-                  {fmt(emergencyRoute.bottleneckFlow)} {t("m³/h")}
-                </InformationRow>
-                <InformationRow label={t("Indicative coverage")}>
-                  {emergencyRoute.coverage}% · {t("not a rated capacity")}
-                </InformationRow>
-                <InformationRow label={t("Rated capacity / valves")}>
-                  {t("Not verified")}
-                </InformationRow>
-                <InformationRow label={t("Operational status")}>
-                  {t("Not confirmed")}
-                </InformationRow>
-                <button
-                  className="emergency-secondary-button"
-                  onClick={() => selectAsset(emergencyRoute.pipeIds.at(-1))}
-                >
-                  <GitBranch size={14} />
-                  {t("Inspect alternative route")}
-                </button>
-              </>
-            )}
-            <button
-              className="emergency-secondary-button"
-              onClick={() => setPreviewRoute((value) => !value)}
-            >
-              <Activity size={14} />
-              {t(
-                previewRoute
-                  ? "Hide alternative route preview"
-                  : "Preview Alternative Route",
+              ) : (
+                <>
+                  <div className="emergency-route-summary">
+                    <b>{emergencyRoute.pipeIds.join(" → ")}</b>
+                    <span>{t(emergencyRoute.suitability)}</span>
+                  </div>
+                  <p>{t(emergencyRoute.reason)}</p>
+                  <p className="emergency-warning">
+                    {t(emergencyRoute.limitation)}
+                  </p>
+                  <InformationRow label={t("Alternative path")}>
+                    {emergencyRoute.path
+                      .map((id) =>
+                        byId[id].type === "pipe" ? id : t(byId[id].name),
+                      )
+                      .join(" → ")}
+                  </InformationRow>
+                  <InformationRow label={t("Required flow · P-104 reference")}>
+                    {fmt(emergencyRoute.requiredFlow)} {t("m³/h")}
+                  </InformationRow>
+                  <InformationRow
+                    label={t("Limiting segment · reference flow")}
+                  >
+                    {emergencyRoute.bottleneckId} ·{" "}
+                    {fmt(emergencyRoute.bottleneckFlow)} {t("m³/h")}
+                  </InformationRow>
+                  <InformationRow label={t("Indicative coverage")}>
+                    {emergencyRoute.coverage}% · {t("not a rated capacity")}
+                  </InformationRow>
+                  <InformationRow label={t("Rated capacity / valves")}>
+                    {t("Not verified")}
+                  </InformationRow>
+                  <InformationRow label={t("Operational status")}>
+                    {t("Not confirmed")}
+                  </InformationRow>
+                  <button
+                    className="emergency-secondary-button"
+                    onClick={() => selectAsset(emergencyRoute.pipeIds.at(-1))}
+                  >
+                    <GitBranch size={14} />
+                    {t("Inspect alternative route")}
+                  </button>
+                </>
               )}
-            </button>
-          </section>
-
+              <button
+                className="emergency-secondary-button"
+                onClick={() => setPreviewRoute((value) => !value)}
+              >
+                <Activity size={14} />
+                {t(
+                  previewRoute
+                    ? "Hide alternative route preview"
+                    : "Preview Alternative Route",
+                )}
+              </button>
+            </section>
           )}
 
           {selected && (
@@ -604,42 +629,47 @@ export default function EmergencyResponse({
 
           <section className="emergency-section">
             {!analyzed ? (
-              <p className="emergency-note">{t("Run AI to generate a simulated route assessment and decision-support analysis.")}</p>
-            ) : (<>
-            <div className="emergency-section-title">
-              <ShieldAlert size={15} />
-              <h3>{t("AI emergency recommendations")}</h3>
-            </div>
-            <div className="emergency-data-note">
-              <CircleHelp size={14} />
-              {t(
-                "Preliminary simulated recommendations · engineer approval required",
-              )}
-            </div>
-            <p className="emergency-note">
-              {t(
-                "Assessment basis: reported burst on P-104, sample asset registry, and static network connectivity. No live telemetry, customer counts, or hydraulic model are connected.",
-              )}
-            </p>
-            {recommendationsReady && (
-              <ol className="emergency-action-list">
-                {ACTIONS.map(([text, rationale, approval], index) => (
-                  <li key={rationale}>
-                    <b>{String(index + 1).padStart(2, "0")}</b>
-                    <div>
-                      <span>{t(text)}</span>
-                      <small>
-                        {t("Rationale")}: {t(rationale)}
-                      </small>
-                      {approval && (
-                        <em>{t("Requires authorized confirmation")}</em>
-                      )}
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            )}
-            {/* <div className="emergency-controls">
+              <p className="emergency-note">
+                {t(
+                  "Run AI to generate a simulated route assessment and decision-support analysis.",
+                )}
+              </p>
+            ) : (
+              <>
+                <div className="emergency-section-title">
+                  <ShieldAlert size={15} />
+                  <h3>{t("AI emergency recommendations")}</h3>
+                </div>
+                <div className="emergency-data-note">
+                  <CircleHelp size={14} />
+                  {t(
+                    "Preliminary simulated recommendations · engineer approval required",
+                  )}
+                </div>
+                <p className="emergency-note">
+                  {t(
+                    "Assessment basis: reported burst on P-104, sample asset registry, and static network connectivity. No live telemetry, customer counts, or hydraulic model are connected.",
+                  )}
+                </p>
+                {recommendationsReady && (
+                  <ol className="emergency-action-list">
+                    {ACTIONS.map(([text, rationale, approval], index) => (
+                      <li key={rationale}>
+                        <b>{String(index + 1).padStart(2, "0")}</b>
+                        <div>
+                          <span>{t(text)}</span>
+                          <small>
+                            {t("Rationale")}: {t(rationale)}
+                          </small>
+                          {approval && (
+                            <em>{t("Requires authorized confirmation")}</em>
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                  </ol>
+                )}
+                {/* <div className="emergency-controls">
               <label className="emergency-status-control">
                 {t("Record simulated status update")}
                 <select value={status} onChange={(event) => setStatus(event.target.value)}>
@@ -655,7 +685,8 @@ export default function EmergencyResponse({
                 {t("Reset Emergency Scenario")}
               </button>
             </div> */}
-            </>)}
+              </>
+            )}
           </section>
 
           {/* {analyzed && <section className="emergency-section emergency-impact-section">
