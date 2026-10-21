@@ -81,7 +81,7 @@ const ACTIONS = [
 const SCAN_DURATION = 4900; // one full left→right pass of the 3D scan bar
 
 const SCAN_STEPS = [
-  ["فحص الأنابيب والوصلات", "Scanning pipes and junctions"],
+  ["فحص المواسير والوصلات", "Scanning pipes and junctions"],
   [
     "تحليل التدفق والضغط (بيانات تجريبية)",
     "Analyzing flow and pressure (sample data)",
@@ -353,7 +353,7 @@ export default function EmergencyResponse({
                 <span>{ar ? "الأصول التي تم فحصها" : "Assets scanned"}</span>
                 <b>
                   {fmt(scanStats.total)} ({fmt(scanStats.pipes)}{" "}
-                  {ar ? "خط أنابيب" : "pipes"})
+                  {ar ? "خط مواسير" : "pipes"})
                 </b>
               </div>
               <div className="ai-scan-result-row bad">
