@@ -310,7 +310,7 @@ export default function EmergencyResponse({
           {scanning && (
             <div className="ai-scan-card" dir={ar ? "rtl" : "ltr"}>
               <h4 className="ai-scan-title">
-                AI Network Scan
+                {ar ? "فحص الشبكه بواسطة الذكاء الاصطناعي" : "AI Network Scan"}
                 <small>{Math.floor(scanProgress)}%</small>
               </h4>
               <div className="ai-scan-bar">
@@ -348,7 +348,9 @@ export default function EmergencyResponse({
               >
                 <X size={15} />
               </button>
-              <h4 className="ai-scan-title">AI Scan Result</h4>
+              <h4 className="ai-scan-title">
+                {ar ? "نتائج فحص الذكاء الاصطناعي" : "AI Scan Result"}
+              </h4>
               <div className="ai-scan-result-row">
                 <span>{ar ? "الأصول التي تم فحصها" : "Assets scanned"}</span>
                 <b>
@@ -669,60 +671,9 @@ export default function EmergencyResponse({
                     ))}
                   </ol>
                 )}
-                {/* <div className="emergency-controls">
-              <label className="emergency-status-control">
-                {t("Record simulated status update")}
-                <select value={status} onChange={(event) => setStatus(event.target.value)}>
-                  {STATUS_OPTIONS.map((option) => <option key={option} value={option}>{t(option)}</option>)}
-                </select>
-              </label>
-              <button className="emergency-secondary-button" onClick={() => setCompare((value) => !value)}>
-                <GitBranch size={14} />
-                {t(compare ? "Hide scenario comparison" : "Compare Network Scenarios")}
-              </button>
-              <button className="emergency-reset-button" onClick={resetScenario}>
-                <RotateCcw size={14} />
-                {t("Reset Emergency Scenario")}
-              </button>
-            </div> */}
               </>
             )}
           </section>
-
-          {/* {analyzed && <section className="emergency-section emergency-impact-section">
-            <div className="emergency-section-title">
-              <Activity size={15} />
-              <h3>{t("Expected impact")}</h3>
-            </div>
-            <p className="emergency-note">
-              {t(
-                "Illustrative sample estimates only. These figures are manually supplied for demonstration and are not calculated from customer records, live telemetry, or a hydraulic model.",
-              )}
-            </p>
-            {affectedZoneSupply.map(({ id, via, mode }) => (
-              <InformationRow key={id} label={t(byId[id].name)}>
-                {mode === "direct"
-                  ? `${t("Fed directly via")} ${via}`
-                  : mode === "downstream"
-                    ? `${t("Fed downstream via")} ${via}`
-                    : t("No alternative supply")}{" "}
-                · {t("pending verification")}
-              </InformationRow>
-            ))}
-            {[
-              ["Affected customers / connections", emergencyImpact.customers],
-              ["Expected service interruption", emergencyImpact.interruption],
-              ["Pressure / flow change", emergencyImpact.pressureChange],
-              [
-                "Estimated repair / restoration time",
-                emergencyImpact.restorationTime,
-              ],
-            ].map(([label, value]) => (
-              <InformationRow key={label} label={t(label)}>
-                {t(value)}
-              </InformationRow>
-            ))}
-          </section>} */}
           <p className="emergency-disclaimer">
             {t(
               "Decision support only. No valves, flow, work orders, notifications, or repairs are executed or confirmed by this application. Proposed actions require authorized engineering and operational review.",
