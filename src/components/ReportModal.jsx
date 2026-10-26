@@ -17,10 +17,10 @@ export default function ReportModal({ budget, lang, onClose }) {
   const [pdfName, setPdfName] = useState("");
   const [uploadError, setUploadError] = useState("");
   const plan = computePlan(budget);
-  const priorities = plan.ids.slice(0, 8).map((id, index) => ({
-    ...byId[id],
-    rank: index + 1,
-  }));
+  const priorities = plan.ids.map((id, index) => ({
+      ...byId[id],
+      rank: index + 1,
+    }));
   const riskReduction = plan.avgBefore
     ? Math.round(((plan.avgBefore - plan.avgAfter) / plan.avgBefore) * 100)
     : 0;
@@ -155,14 +155,9 @@ export default function ReportModal({ budget, lang, onClose }) {
                     <small>{t("M EGP")}</small>
                   </div>
                   <div>
-                    <span>{t("Investment proposed")}</span>
-                    <strong>
-                      {plan.spent.toLocaleString(
-                        lang === "ar" ? "ar-EG" : "en-US",
-                        { maximumFractionDigits: 1 },
-                      )}
-                    </strong>
-                    <small>{t("M EGP")}</small>
+                    <span>{t("Selected interventions")}</span>
+                    <strong>{plan.ids.length.toLocaleString("en-US")}</strong>
+                    <small>{t("interventions")}</small>
                   </div>
                   <div>
                     <span>{t("Avg network risk")}</span>
@@ -184,7 +179,7 @@ export default function ReportModal({ budget, lang, onClose }) {
                   :{" "}
                   <b>
                     {plan.fullCoverageBudget.toLocaleString(
-                      lang === "ar" ? "ar-EG" : "en-US",
+                      "en-US",
                       { maximumFractionDigits: 1 },
                     )}{" "}
                     {t("M EGP")}
@@ -221,7 +216,7 @@ export default function ReportModal({ budget, lang, onClose }) {
                           <th>{t("Type")}</th>
                           <th>{t("Risk")}</th>
                           <th>{t("Est. cost")}</th>
-                          <th>{t("After renewal")}</th>
+                          {/* <th>{t("After renewal")}</th> */}
                         </tr>
                       </thead>
                       <tbody>
@@ -246,16 +241,16 @@ export default function ReportModal({ budget, lang, onClose }) {
                               )}
                             </td>
                             <td>
-                              <span className="risk-value">{asset.risk}%</span>
+                              <span className="risk-value" style={{color:asset.risk>=65?'#f87171':asset.risk>=45?'#fbbf24':'#34d399'}}>{asset.risk}%</span>
                             </td>
                             <td>
                               {asset.cost} {t("M EGP")}
                             </td>
-                            <td>
+                            {/* <td>
                               <span className="after-value">
                                 {t("Renewed")} · 8%
                               </span>
-                            </td>
+                            </td> */}
                           </tr>
                         ))}
                       </tbody>
@@ -267,12 +262,6 @@ export default function ReportModal({ budget, lang, onClose }) {
                       "No assets qualify for renewal at this budget. Increase the budget to review eligible priorities.",
                     )}
                   </div>
-                )}
-                {plan.ids.length > priorities.length && (
-                  <p className="table-note">
-                    {t("Showing first 8 of")} {plan.ids.length}{" "}
-                    {t("recommended interventions.")}
-                  </p>
                 )}
               </section>
 

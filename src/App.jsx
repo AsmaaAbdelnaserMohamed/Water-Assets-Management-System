@@ -1,6 +1,6 @@
 import { lazy, Suspense, useState, useEffect } from 'react'
 import { useScenario, getPlan } from './hooks/useScenario'
-import { nodeById, posOf } from './data/network'
+ import { nodeById, posOf } from './data/network'
 import { LangCtx } from './i18n'
 import { OVERVIEW, focusAt } from './components/sceneCamera'
 import { TopBar, Toolbar, Card, Controls, AIPanel, Metrics, RiskLegend } from './components/Panels'
@@ -15,10 +15,10 @@ export default function App(){
   const [activeView,setActiveView]=useState('renewal')
   const [mode,setMode]=useState('overview'), [sel,setSel]=useState(null), [focus,setFocus]=useState(OVERVIEW)
   const [showBuildings,setShowBuildings]=useState(true)
-  const [budget,setBudget]=useState(60), [sat,setSat]=useState(false), [lang,setLang]=useState('en')
+ const [budget,setBudget]=useState(5), [sat,setSat]=useState(false), [lang,setLang]=useState('en')
   const [reportOpen,setReportOpen]=useState(false)
   useEffect(()=>{ if(phase==='idle'){setFocus(OVERVIEW);setSel(null);setMode('overview')} else if(phase==='locating'){const t=getPlan().ids[0];if(t){const q=posOf(t);setFocus(focusAt(q.x,q.z,15))};setSel(null)} else if(phase==='insight'){setMode('risk')} },[phase])
-  const onSel=(kind,id)=>{ if(!kind){setSel(null);return}; setSel({kind,id}); const n=nodeById[id]; setFocus(focusAt(n.x,n.z,12)) }
+ const onSel=(kind,id)=>{ if(!kind){setSel(null);return}; setSel({kind,id}); const n=posOf(id); setFocus(focusAt(n.x,n.z,12)) }
   return (<LangCtx.Provider value={lang}><div className="app" lang={lang}><TopBar phase={phase} setLang={setLang} activeView={activeView} setActiveView={setActiveView}/>
     {activeView==='emergency'
       ? <Suspense fallback={<main className="emergency-main"><section className="stage"><SceneLoading/></section><aside className="ai"/></main>}>

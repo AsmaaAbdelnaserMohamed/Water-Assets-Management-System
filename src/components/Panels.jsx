@@ -48,14 +48,14 @@ export function RiskLegend(){
 export function Controls({phase,run,reset,budget,setBudget}){
   const {t}=useT(), pi=order.indexOf(phase), maxBudget=Math.max(150,Math.ceil(getPlan().fullCoverageBudget/5)*5)
   return <div className="ctl"><label className="bud"><span>{t('Budget')}: <b>{budget} {t('M EGP')}</b></span>
-    <input type="range" min="20" max={maxBudget} step="5" value={budget} disabled={pi>0&&pi<4} onChange={e=>setBudget(+e.target.value)}/></label>
+    <input type="range" min="5" max={maxBudget} step="5" value={budget} disabled={pi>0&&pi<4} onChange={e=>setBudget(+e.target.value)}/></label>
     <div className="btns"><button className="run" disabled={pi>0&&pi<4} onClick={run}><Play size={16}/>{t('RUN AI SCENARIO')}</button>
     <button className="rst" disabled={pi===0} onClick={reset}><RotateCcw size={15}/>{t('RESET SCENARIO')}</button></div></div>
 }
 export function Card({sel,phase,onClose}){
   const {t,lang}=useT()
   if(!sel) return null
-  const n=(sel.kind==='zone'?zones:assets).find(x=>x.id===sel.id), s=statusOf(n.id,phase), rn=renewed(n.id,phase), risk=riskOf(n.id,phase)
+  const n=items.find(x=>x.id===sel.id), s=statusOf(n.id,phase), rn=renewed(n.id,phase), risk=riskOf(n.id,phase)
   const lvl=risk>=65?'High':risk>=45?'Medium':'Low', lab=rn?'Renewed':{ok:'Operational',warning:'Warning',critical:'Critical'}[s]
   return <div className="card" dir={lang==='ar'?'rtl':'ltr'}><button className="x" onClick={onClose} aria-label="Close"><X size={14}/></button>
     <h3>{t(n.name)}</h3><div className={'st '+(rn?'ok':s)}><i/>{t(lab)}</div>
@@ -74,17 +74,25 @@ export function AIPanel({phase,onReport}){
     {pi>=4&&!top&&<p className="mut">{t('No eligible renewal candidates fit the selected budget. Increase the budget to see the AI-recommended plan.')}</p>}
     {pi>=4&&top&&<div className="ins">
       <h4>{t('Priority list')}</h4>
-      <ul>{P.ids.slice(0,5).map((id,i)=><li key={id}><span>{i+1}. {t(byId[id].name)}</span><b dir="ltr">{byId[id].risk}% → {RENEWED}%</b></li>)}</ul>
+      <ul>{P.ids.map((id,i)=><li key={id}><span>{i+1}. {t(byId[id].name)}</span><b dir="ltr" style={{color:byId[id].risk>=65?'#f87171':byId[id].risk>=45?'#fbbf24':'#34d399'}}>{byId[id].risk}% → {RENEWED}%</b></li>)}</ul>
       <div className="kv"><span>{t('Interventions')}</span><b>{P.ids.length}</b></div>
       <h4>{t('Risk drivers')}</h4>
       {drv.map(([a,v])=><div className="drv" key={a}><span>{t(a)}</span><div><i style={{'--w':Math.round(v*100)+'%'}}/></div><b>{Math.round(v*100)}%</b></div>)}
       <h4>{t('Network risk')}</h4>
       <ul><li><span>{t('Before')}</span><b>{P.avgBefore}%</b></li><li><span>{t('After')}</span><b>{P.avgAfter}%</b></li>
         <li className="good"><span>{t('High-risk assets')}</span><b dir="ltr">{P.highBefore} → {P.highAfter}</b></li></ul>
-      <div className="act"><h4>{t('Recommended action')}</h4><p>{t('The AI analyzed the water network and recommends approving this priority-based renewal plan.')}</p>
-        <div className="kv"><span>{t('AI budget for all eligible renewal candidates')}</span><b dir="ltr"><Num v={P.fullCoverageBudget} dec={1}/> {t('M EGP')}</b></div>
+      <div className="act">
+        <div className="act-head"><div><span className="act-kicker">{t('AI RECOMMENDATION')}</span><h4>{t('Recommended action')}</h4></div><span className={'act-status '+(P.ids.length?'ready':'review')}>{P.ids.length?t('READY TO EXECUTE'):t('REVIEW REQUIRED')}</span></div>
+        <p className="act-lead">{P.ids.length?t('The AI recommends approving the selected renewal portfolio in priority order.'):t('Increase the budget to create a renewal portfolio.')}</p>
+        <div className="act-grid">
+          <div><span>{t('Selected interventions')}</span><b>{P.ids.length}</b></div>
+          <div><span>{t('Risk reduction')}</span><b>{Math.round((P.avgBefore-P.avgAfter)/P.avgBefore*100)}%</b></div>
+          <div><span>{t('Budget used')}</span><b dir="ltr"><Num v={P.spent} dec={1}/> {t('M EGP')}</b></div>
+          <div><span>{t('Portfolio status')}</span><b className="hi">{P.ids.length?t('HIGH'):t('REVIEW')}</b></div>
+        </div>
+        <div className="act-budget"><span>{t('AI budget for all eligible renewal candidates')}</span><b dir="ltr"><Num v={P.fullCoverageBudget} dec={1}/> {t('M EGP')}</b></div>
         <p className="mut">{t('Covers all renewal candidates with a risk score of 40% or higher.')}</p>
-        <div className="kv"><span>{t('Priority')}</span><b className="hi">{t('HIGH')}</b></div></div>
+      </div>
       <p className="final">{t('FROM DATA')}<br/>{t('TO INSIGHT')}<br/>{t('TO ACTION')}</p>
       <button className="langbtn report-trigger report-trigger-results" onClick={onReport}><FileText size={14}/>{t('Decision report')}</button>
     </div>}
@@ -92,7 +100,8 @@ export function AIPanel({phase,onReport}){
 }
 export function Metrics({phase,budget}){
   const {t}=useT(), h=hot(phase), P=getPlan()
-  const M=[['Assets in registry',items.length,0,''],['High-risk assets',h?P.highAfter:P.highBefore,0,''],['Avg network risk',h?P.avgAfter:P.avgBefore,0,'%'],
+  const highRiskCount=h?P.highAfter:P.highBefore
+  const M=[['Assets in registry',items.length,0,''],['High-risk assets',highRiskCount,0,''],['Avg network risk',h?P.avgAfter:P.avgBefore,0,'%'],
     ['Budget (M EGP)',budget,0,''],['Interventions',h?P.ids.length:0,0,''],['Risk reduction',h?Math.round((P.avgBefore-P.avgAfter)/P.avgBefore*100):0,0,'%']]
   return <footer className="metrics">{M.map(([l,v,d,x])=><div key={l}><span>{t(l)}</span><b>{v.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d})}{x}</b></div>)}</footer>
 }

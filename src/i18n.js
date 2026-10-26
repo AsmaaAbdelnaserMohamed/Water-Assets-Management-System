@@ -26,7 +26,7 @@ const AR = {
  '⚠ ANOMALY DETECTED':'⚠ تم اكتشاف حالة شاذة','Risk level':'مستوى الخطر','Possible water loss':'احتمال فقد مياه','Zone 07 requires attention.':'المنطقة 07 تحتاج إلى انتباه.',
  'Pressure drop':'انخفاض الضغط','Flow anomaly':'شذوذ التدفق','Previous failures':'أعطال سابقة','Asset age':'عمر الأصل','17 years':'17 سنة','Pressure anomaly':'شذوذ الضغط',
  'Confidence':'مستوى الثقة','Risk drivers':'محركات الخطر','Water loss':'فقد المياه','Expected flow':'التدفق المتوقع','Observed flow':'التدفق الفعلي','Difference':'الفرق',
- 'Recommended action':'الإجراء الموصى به','Inspect Pump Station 04 and Pipeline P-104.':'فحص محطة الرفع 04 وخط المواسير P-104.','Priority':'الأولوية','HIGH':'عالية',
+'Recommended action':'الإجراء الموصى به','AI RECOMMENDATION':'توصية الذكاء الاصطناعي','READY TO EXECUTE':'جاهز للتنفيذ','REVIEW REQUIRED':'يتطلب مراجعة','The AI recommends approving the selected renewal portfolio in priority order.':'يوصي الذكاء الاصطناعي باعتماد محفظة التجديد المحددة حسب ترتيب الأولوية.','Increase the budget to create a renewal portfolio.':'ارفع الميزانية لإنشاء محفظة تجديد.','Selected interventions':'التدخلات المحددة','Portfolio status':'حالة المحفظة','REVIEW':'مراجعة','Inspect Pump Station 04 and Pipeline P-104.':'فحص محطة الرفع 04 وخط المواسير P-104.','Priority':'الأولوية','HIGH':'عالية',
  'FROM DATA':'من البيانات','TO INSIGHT':'إلى الرؤية','TO ACTION':'إلى الإجراء',
  'Network health':'صحة الشبكة','Active assets':'الأصول النشطة','Flow (m³/h)':'التدفق (م³/س)','Active alerts':'التنبيهات النشطة','Network risk':'مخاطر الشبكة',
  'Cairo Water Treatment Plant':'محطة مياه القاهرة','Maadi Treatment Plant':'محطة معالجة المعادي','Reservoir North':'خزان الشمال','Reservoir Central':'خزان الوسط','Reservoir South':'خزان الجنوب',

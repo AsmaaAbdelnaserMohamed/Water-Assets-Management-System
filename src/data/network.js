@@ -96,6 +96,7 @@ export const assets = [
 const Z = (n, x, z, risk, pressure, flow) => ({
   id: "Z0" + n,
   name: "Zone 0" + n,
+  type: "zone",
   x,
   z,
   risk,
@@ -172,6 +173,7 @@ const PM = ["Cast iron", "Asbestos cement", "Steel", "Ductile iron", "HDPE"],
 const STAR = {
   "PS-04": [2003, "Steel", 5, 0.9, 6.5],
   "P-104": [1998, "Cast iron", 5, 0.85, 4.2],
+  "WT-2": [2000, "Steel", 5, 0.9, 1.3],
   Z07: [2001, "Cast iron", 4, 0.9, 11],
 };
 const BASE = { plant: 40, reservoir: 18, tower: 9, pump: 6, zone: 8 };
@@ -225,7 +227,8 @@ export const posOf = (id) => {
 export const RENEWED = 8;
 const prio = (i) => (i.risk * (0.5 + 0.5 * i.served)) / i.cost;
 export function computePlan(budget) {
-  const eligible = items.filter((i) => i.risk >= 40);
+  const renewalItems = items.filter((i) => i.type !== "zone");
+  const eligible = renewalItems.filter((i) => i.risk >= 40);
   let spent = 0;
   const ids = [];
   [...eligible]
@@ -238,15 +241,15 @@ export function computePlan(budget) {
     });
   const set = new Set(ids),
     after = (i) => (set.has(i.id) ? RENEWED : i.risk),
-    sum = (f) => items.reduce((t, i) => t + f(i), 0);
+    sum = (f) => renewalItems.reduce((t, i) => t + f(i), 0);
   return {
     ids,
     set,
     spent: +spent.toFixed(1),
-    avgBefore: Math.round(sum((i) => i.risk) / items.length),
-    avgAfter: Math.round(sum(after) / items.length),
-    highBefore: items.filter((i) => i.risk >= 65).length,
-    highAfter: items.filter((i) => after(i) >= 65).length,
+    avgBefore: Math.round(sum((i) => i.risk) / renewalItems.length),
+    avgAfter: Math.round(sum(after) / renewalItems.length),
+    highBefore: renewalItems.filter((i) => i.risk >= 65).length,
+    highAfter: renewalItems.filter((i) => after(i) >= 65).length,
     eligibleCount: eligible.length,
     fullCoverageBudget: +eligible
       .reduce((total, i) => total + i.cost, 0)

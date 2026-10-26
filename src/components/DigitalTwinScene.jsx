@@ -2,7 +2,7 @@ import { memo, useMemo, useRef, useEffect, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls, Html } from '@react-three/drei'
 import * as THREE from 'three'
-import { assets, zones, pipes, sensors, nodeById, posOf } from '../data/network'
+import { assets, zones, pipes, sensors, nodeById, byId, posOf } from '../data/network'
 import { statusOf, order, renewed, riskOf, getPlan } from '../hooks/useScenario'
 import { tr } from '../i18n'
 import { OVERVIEW } from './sceneCamera'
@@ -18,9 +18,10 @@ const riskStatus = risk => risk>=65?'critical':risk>=45?'warning':'ok'
 export const riskClass = riskStatus
 export const assetRisk = o => o.risk ?? riskOf(o.id,'idle',getPlan())
 function tone(mode,phase,id,risk,pressure,base,plan){
+  if(byId[id]?.type==='zone') return base
   const s=statusOf(id,phase,plan), reportReady=phase==='insight', hot=reportReady&&s!=='ok'
-  if(mode==='risk'&&reportReady) return COL[riskStatus(risk)]
   if(reportReady&&renewed(id,phase,plan)) return '#22d3ee'
+  if(mode==='risk'&&reportReady) return COL[riskStatus(risk)]
   if(mode==='risk'&&!reportReady) return base
   if(mode==='alerts') return hot?COL[s]:'#16283c'
   if(hot) return COL[s]
@@ -89,14 +90,14 @@ function City(){
   </group>
 }
 const Zone=memo(function Zone({z,mode,phase,sel,onSel,sat,lang,plan,emergency,riskView}){
-  const affected=emergency?.affectedIds.includes(z.id), rv=!!riskView, rk=rv?assetRisk(z):0, rc=rv?COL[riskStatus(rk)]:null
-  const c=rv?rc:emergency?(affected?'#fbbf24':'#163247'):tone(mode,phase,z.id,riskOf(z.id,phase,plan),z.pressure,'#0f3b52',plan), hot=phase==='insight'&&statusOf(z.id,phase,plan)!=='ok', m=useRef()
+  const affected=emergency?.affectedIds.includes(z.id)
+  const c=emergency?(affected?'#fbbf24':'#163247'):'#0f3b52', hot=false, m=useRef()
   useFrame(({clock})=>{ if(hot&&m.current&&!RM) m.current.material.emissiveIntensity=.45+.3*Math.sin(clock.elapsedTime*4) })
   return <group position={[z.x,0,z.z]}>
     <mesh ref={m} position={[0,.08,0]} onClick={e=>{e.stopPropagation();emergency?emergency.onSelect(z.id):onSel('zone',z.id)}}>
       <boxGeometry args={[4.4,.16,3.6]}/><meshStandardMaterial color={c} emissive={c} emissiveIntensity={.35} transparent opacity={mode==='assets'?.3:sat?.5:.85}/></mesh>
     <lineSegments geometry={ZE} position={[0,.17,0]}><lineBasicMaterial color={sel?'#fff':'#38bdf8'} transparent opacity={sel?1:.35}/></lineSegments>
-    <Html position={[0,.5,-1.5]} center distanceFactor={24} style={{pointerEvents:'none'}}><span className={'zl'+(hot||(rv&&riskStatus(rk)==='critical')?' hot':'')}>{tr(lang,z.name)}{rv&&' · '+Math.round(rk)+'%'}</span></Html>
+    <Html position={[0,.5,-1.5]} center distanceFactor={24} style={{pointerEvents:'none'}}><span className="zl">{tr(lang,z.name)}</span></Html>
   </group>
 })
 const Asset=memo(function Asset({a,mode,phase,sel,onSel,plan,emergency,riskView}){
@@ -182,19 +183,19 @@ const RISK_CSS=`
 .rk-note{margin:8px 0 0;font-size:11px;opacity:.6}
 .rk-close{position:absolute;top:8px;inset-inline-end:8px;background:none;border:0;color:#cfe8ff;cursor:pointer;padding:4px;font-size:16px;line-height:1}
 `
-function RiskControl({lang,on,setOn,stats,onSel}){
+function RiskControl({lang,on,setOn,stats,onSel,plan}){
   const ar=lang==='ar', fmt=n=>n.toLocaleString(ar?'ar-EG':'en-US')
   return <div className="rk-wrap">
     <style>{RISK_CSS}</style>
     {on&&<div className="rk-panel" dir={ar?'rtl':'ltr'}>
       <button className="rk-close" onClick={()=>setOn(false)} aria-label="close">×</button>
       <h4 className="rk-title">Asset Risk Classification
-        <small>{ar?'من بيانات الأصول مباشرة · بدون ميزانية تجديد':'From asset data · no renewal budget applied'}</small></h4>
+        <small>{ar?'من نفس خطة أولويات التجديد':'Same renewal priority plan'}</small></h4>
       {RISK_LEVELS.map(([k,arL,enL,range])=><div className="rk-row" key={k}>
         <span><i className="rk-dot" style={{background:RISK_COLORS[k]}}/>{ar?arL:enL} ({range})</span>
         <b>{fmt(stats.assets[k])} {ar?'أصل':'assets'} · {fmt(stats.pipes[k])} {ar?'خط':'pipes'}</b></div>)}
       <div className="rk-list"><h5>{ar?'الأعلى خطورة':'Highest risk assets'}</h5>
-        {stats.top.map(i=><button key={i.id} className="rk-item" onClick={()=>onSel('asset',i.id)}>
+        {stats.top.map(i=><button key={i.id} className="rk-item" onClick={()=>onSel(i.type==='pipe'?'pipe':'asset',i.id)}>
           <span>{i.id} · {tr(lang,i.name)}</span><b style={{color:RISK_COLORS[riskStatus(i.risk)]}}>{Math.round(i.risk)}%</b></button>)}</div>
       <p className="rk-note">{ar?'درجات استرشادية من بيانات تجريبية — تتطلب مراجعة هندسية.':'Indicative scores from sample data — engineering review required.'}</p>
     </div>}
@@ -207,7 +208,7 @@ function RiskControl({lang,on,setOn,stats,onSel}){
 export default function Scene({mode,phase,sel,onSel,focus,sat,lang,showBuildings,plan=getPlan(),emergency=null}){
   const [riskView,setRiskView]=useState(false)
   const riskStats=useMemo(()=>{const cnt=l=>l.reduce((m,o)=>{m[riskStatus(assetRisk(o))]++;return m},{critical:0,warning:0,ok:0})
-    return {assets:cnt(assets),pipes:cnt(pipes),top:[...assets].map(a=>({id:a.id,name:a.name,risk:assetRisk(a)})).sort((x,y)=>y.risk-x.risk).slice(0,5)}},[])
+    return {assets:cnt(assets),pipes:cnt(pipes),top:[...assets,...pipes].filter(i=>assetRisk(i)>=65).sort((a,b)=>assetRisk(b)-assetRisk(a)).slice(0,5).map(i=>({...i,risk:assetRisk(i)}))}},[])
   const ctl=useRef(), pi=order.indexOf(phase), topId=plan.ids[0], tp=topId&&posOf(topId)
   const pulseColor=topId&&phase==='insight'?COL[riskStatus(riskOf(topId,phase,plan))]:COL[statusOf(topId,phase,plan)]
   return <div style={{position:'relative',width:'100%',height:'100%',overflow:'hidden'}}>
@@ -225,6 +226,6 @@ export default function Scene({mode,phase,sel,onSel,focus,sat,lang,showBuildings
     <OrbitControls ref={ctl} makeDefault enableDamping maxPolarAngle={1.3} minDistance={5} maxDistance={55}/>
     <Rig focus={focus} ctl={ctl}/>
   </Canvas>
-  {!emergency&&<RiskControl lang={lang} on={riskView} setOn={setRiskView} stats={riskStats} onSel={onSel}/>}
+  {!emergency&&<RiskControl lang={lang} on={riskView} setOn={setRiskView} stats={riskStats} onSel={onSel} plan={plan}/>} 
   </div>
 }
